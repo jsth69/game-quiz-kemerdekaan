@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pejuang Muda – Kuis Kemerdekaan RI</title>
+<style>
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --red: #CC2B2B;
+  --red-light: #F7E5E5;
+  --red-dark: #8B1A1A;
+  --gold: #D4A017;
+  --gold-light: #FFF8E1;
+  --cream: #FDF6EC;
+  --bark: #5C3A1E;
+  --sky: #1A6DA8;
+  --sky-light: #E3F0FA;
+  --green: #2D7A2D;
+  --green-light: #E8F5E8;
+  --text: #1C1008;
+  --muted: #6B5744;
+  --border: #E0C8A0;
+  --white: #FFFFFF;
+  --shadow: 0 4px 24px rgba(0,0,0,0.12);
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+html { font-size: 16px; }
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--cream);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ===== ANIMATED SKY BG ===== */
+.sky-bg {
+  position: fixed; inset: 0; z-index: 0;
+  background: linear-gradient(180deg, #87CEEB 0%, #C8E8F8 50%, #FDF6EC 100%);
+  pointer-events: none;
+}
+.cloud {
+  position: absolute;
+  background: rgba(255,255,255,0.85);
+  border-radius: 50px;
+  animation: drift linear infinite;
+}
+.cloud::before, .cloud::after {
+  content: '';
+  position: absolute;
+  background: rgba(255,255,255,0.85);
+  border-radius: 50%;
+}
+.cloud-1 { width:90px; height:32px; top:8%; animation-duration:32s; animation-delay:-5s; }
+.cloud-1::before { width:50px;height:50px;top:-22px;left:12px; }
+.cloud-1::after { width:35px;height:35px;top:-14px;left:42px; }
+.cloud-2 { width:120px;height:38px;top:16%;animation-duration:48s;animation-delay:-20s; }
+.cloud-2::before { width:65px;height:65px;top:-30px;left:18px; }
+.cloud-2::after { width:45px;height:45px;top:-20px;left:64px; }
+.cloud-3 { width:70px;height:25px;top:5%;animation-duration:38s;animation-delay:-12s; }
+.cloud-3::before { width:38px;height:38px;top:-18px;left:10px; }
+.cloud-3::after { width:28px;height:28px;top:-10px;left:36px; }
+@keyframes drift { from { left: -160px; } to { left: calc(100vw + 160px); } }
+
+
+#app {
+  position: relative; z-index: 1;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 0 1rem 3rem;
+  min-height: 100vh;
+}
+
+/* ===== SCREENS ===== */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* ===== TOP BAR ===== */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 0 0.5rem;
+}
+.topbar-logo {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 700; color: var(--red-dark);
+  letter-spacing: 0.5px; text-transform: uppercase;
+}
+
+
+#home-title-block { text-align: center; padding: 1rem 0 0.5rem; }
+.badge-kemerdekaan {
+  display: inline-block;
+  background: var(--red); color: #fff;
+  font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+  padding: 4px 14px; border-radius: 999px; margin-bottom: 0.75rem;
+}
+.game-title {
+  font-size: clamp(28px, 6vw, 42px);
+  font-weight: 800; color: var(--red-dark);
+  line-height: 1.1; margin-bottom: 0.4rem;
+  text-shadow: 2px 2px 0 rgba(0,0,0,0.07);
+}
+.game-subtitle { font-size: 15px; color: var(--muted); margin-bottom: 1rem; }
+
+/* ===== CHARACTER STAGE ===== */
+.char-stage {
+  display: flex; align-items: flex-end; justify-content: center;
+  gap: 0; margin: 0.5rem 0; position: relative;
+  min-height: 200px;
+}
+.char-wrap {
+  display: flex; flex-direction: column; align-items: center;
+  position: relative;
+}
+.char-wrap svg { filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.18)); }
+.char-label {
+  font-size: 11px; font-weight: 700; color: var(--muted);
+  margin-top: 4px; text-align: center;
+}
+/* bubble */
+.speech-bubble {
+  position: absolute;
+  background: #fff;
+  border: 2px solid var(--gold);
+  border-radius: 14px;
+  padding: 8px 12px;
+  font-size: 13px; font-weight: 600; color: var(--bark);
+  white-space: nowrap;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+  animation: bubblePop 0.35s cubic-bezier(0.34,1.56,0.64,1);
+  z-index: 10;
+}
+.speech-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -10px; left: 50%; transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--gold);
+}
+.speech-bubble.left::after { left: 22px; }
+.speech-bubble.right::after { left: auto; right: 22px; }
+@keyframes bubblePop { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+/* flag wave */
+.flag-pole { transform-origin: bottom center; }
+.flag-wave { animation: wave 1.8s ease-in-out infinite; transform-origin: left center; }
+@keyframes wave {
+  0%,100% { d: path("M 8 0 Q 30 8 52 0 Q 30 -6 8 0 Z"); }
+  50% { d: path("M 8 0 Q 30 -8 52 0 Q 30 6 8 0 Z"); }
+}
+
+.char-idle { animation: bob 2.4s ease-in-out infinite; }
+@keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+.char-idle-2 { animation: bob 2.8s ease-in-out infinite 0.5s; }
+.char-idle-3 { animation: bob 2.2s ease-in-out infinite 1s; }
+
+/* ===== INFO BOX ===== */
+.info-box {
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+  display: flex; gap: 12px; align-items: flex-start;
+}
+.info-icon { font-size: 24px; flex-shrink: 0; }
+.info-text { font-size: 14px; color: var(--muted); line-height: 1.65; }
+
+
+.mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.25rem; }
+.mode-card {
+  background: #fff;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  position: relative; overflow: hidden;
+}
+.mode-card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: var(--red-light);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.mode-card:hover::before { opacity: 1; }
+.mode-card.selected { border-color: var(--red); background: var(--red-light); }
+.mode-card.selected .mode-name { color: var(--red-dark); }
+.mode-icon-big { font-size: 32px; display: block; margin-bottom: 8px; position: relative; z-index: 1; }
+.mode-name { font-size: 15px; font-weight: 700; color: var(--text); position: relative; z-index: 1; }
+.mode-detail { font-size: 12px; color: var(--muted); margin-top: 4px; position: relative; z-index: 1; }
+.mode-tag {
+  display: inline-block;
+  font-size: 10px; font-weight: 700;
+  padding: 2px 8px; border-radius: 999px; margin-top: 6px;
+  position: relative; z-index: 1;
+}
+.tag-easy { background: var(--green-light); color: var(--green); }
+.tag-hard { background: var(--red-light); color: var(--red-dark); }
+
+
+.btn {
+  display: block; width: 100%;
+  padding: 14px; border: none; border-radius: var(--radius-sm);
+  font-size: 16px; font-weight: 700; cursor: pointer;
+  transition: transform 0.1s, opacity 0.15s;
+  letter-spacing: 0.3px;
+}
+.btn:active { transform: scale(0.97); }
+.btn-red { background: var(--red); color: #fff; box-shadow: 0 4px 0 var(--red-dark); }
+.btn-red:hover { opacity: 0.92; }
+.btn-outline { background: #fff; color: var(--text); border: 2px solid var(--border); margin-top: 10px; }
+.btn-outline:hover { background: #f5f0e8; }
+
+
+.quiz-hud {
+  display: flex; align-items: center; gap: 10px;
+  padding: 0.75rem 0; margin-bottom: 0.5rem;
+}
+.hud-score {
+  background: var(--gold-light);
+  border: 1.5px solid var(--gold);
+  border-radius: 999px; padding: 4px 14px;
+  font-size: 13px; font-weight: 700; color: #8B6800;
+  display: flex; align-items: center; gap: 5px;
+}
+.hud-q { font-size: 13px; color: var(--muted); flex: 1; text-align: center; }
+.hud-timer {
+  background: var(--sky-light);
+  border: 1.5px solid var(--sky);
+  border-radius: 999px; padding: 4px 14px;
+  font-size: 13px; font-weight: 700; color: var(--sky);
+  min-width: 64px; text-align: center;
+  transition: background 0.3s, color 0.3s, border-color 0.3s;
+}
+.hud-timer.danger { background: var(--red-light); border-color: var(--red); color: var(--red); }
+.hud-timer.critical { background: var(--red); color: #fff; border-color: var(--red-dark); animation: pulse 0.5s ease-in-out infinite; }
+@keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+
+/* progress */
+.prog-bar-bg {
+  background: var(--border);
+  border-radius: 999px; height: 8px;
+  margin-bottom: 1rem; overflow: hidden;
+}
+.prog-bar-fill {
+  background: linear-gradient(90deg, var(--red) 0%, var(--gold) 100%);
+  height: 100%; border-radius: 999px;
+  transition: width 0.5s cubic-bezier(0.34,1.3,0.64,1);
+}
+
+
+.quiz-layout { margin-bottom: 1rem; }
+
+
+.quiz-question-card {
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+
+
+.quiz-char-row {
+  display: flex; align-items: flex-end; gap: 12px;
+}
+.quiz-char-col { flex-shrink: 0; width: 80px; }
+.quiz-char-col svg { width: 80px; display: block; }
+
+
+.quiz-bubble {
+  flex: 1;
+  background: #fff;
+  border: 2px solid var(--gold);
+  border-radius: 14px;
+  border-bottom-left-radius: 4px;
+  padding: 10px 14px;
+  font-size: 14px; font-weight: 600; color: var(--bark);
+  line-height: 1.5;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+  position: relative;
+  align-self: center;
+}
+
+.quiz-bubble::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: -10px;
+  transform: translateY(-50%);
+  border: 6px solid transparent;
+  border-right-color: var(--gold);
+}
+.quiz-bubble::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: -7px;
+  transform: translateY(-50%);
+  border: 5px solid transparent;
+  border-right-color: #fff;
+}
+.quiz-bubble-text { font-size: 12px; color: var(--muted); font-weight: 400; margin-top: 3px; }
+
+
+.cat-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--red-light); border: 1px solid #F7C1C1;
+  border-radius: 999px; padding: 3px 12px;
+  font-size: 11px; font-weight: 700; color: var(--red-dark);
+  text-transform: uppercase; letter-spacing: 0.5px;
+  margin-bottom: 0.6rem;
+}
+
+.question-text {
+  font-size: 17px; font-weight: 700; line-height: 1.5;
+  color: var(--text); margin-bottom: 0;
+}
+
+
+.options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 1rem; }
+.opt {
+  background: #fff;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 13px 16px;
+  font-size: 15px; font-weight: 500; color: var(--text);
+  cursor: pointer; text-align: left;
+  display: flex; align-items: center; gap: 12px;
+  transition: border-color 0.15s, background 0.15s, transform 0.1s;
+  position: relative; overflow: hidden;
+}
+.opt:hover:not([disabled]) { border-color: var(--sky); background: var(--sky-light); transform: translateX(3px); }
+.opt:active:not([disabled]) { transform: scale(0.98); }
+.opt-letter {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: #f0ebe0; color: var(--muted);
+  font-size: 12px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: background 0.2s, color 0.2s;
+}
+.opt.correct { background: var(--green-light); border-color: var(--green); }
+.opt.correct .opt-letter { background: var(--green); color: #fff; }
+.opt.wrong { background: var(--red-light); border-color: var(--red); }
+.opt.wrong .opt-letter { background: var(--red); color: #fff; }
+.opt[disabled] { cursor: default; }
+
+
+.feedback {
+  border-radius: var(--radius-sm); padding: 1rem 1.1rem;
+  font-size: 14px; line-height: 1.65; margin-bottom: 1rem;
+  display: none; border: 1.5px solid;
+}
+.feedback.show { display: flex; gap: 10px; align-items: flex-start; }
+.feedback-icon { font-size: 20px; flex-shrink: 0; }
+.feedback.correct { background: var(--green-light); border-color: #97C459; color: #1A4A1A; }
+.feedback.wrong { background: var(--red-light); border-color: #F09595; color: var(--red-dark); }
+.feedback.timeout { background: var(--gold-light); border-color: var(--gold); color: #7A5A00; }
+
+
+#screen-result { text-align: center; padding: 1rem 0 2rem; }
+.result-char-row {
+  display: flex; align-items: flex-end; justify-content: center;
+  gap: 16px; margin: 0.75rem 0 1rem;
+}
+.result-medal-big { font-size: 64px; display: block; margin-bottom: 0.5rem; animation: medalDrop 0.6s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes medalDrop { from { transform: translateY(-40px) scale(0.5); opacity: 0; } to { transform: none; opacity: 1; } }
+.result-title { font-size: 24px; font-weight: 800; color: var(--red-dark); margin-bottom: 0.4rem; }
+.result-msg { font-size: 15px; color: var(--muted); line-height: 1.6; margin-bottom: 1.5rem; }
+
+.stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 1.5rem; }
+.stat-box {
+  background: #fff; border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); padding: 0.9rem 0.5rem;
+}
+.stat-num { font-size: 26px; font-weight: 800; color: var(--red-dark); }
+.stat-label { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+
+.xp-bar-wrap { margin-bottom: 1.5rem; }
+.xp-label { font-size: 13px; color: var(--muted); margin-bottom: 5px; text-align: left; }
+.xp-bg { background: var(--border); border-radius: 999px; height: 12px; overflow: hidden; }
+.xp-fill { background: linear-gradient(90deg, var(--red) 0%, var(--gold) 100%); height: 100%; border-radius: 999px; transition: width 1.2s ease; }
+
+
+.log-section { text-align: left; margin-bottom: 1.5rem; }
+.log-title { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.6rem; }
+.log-item {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+  font-size: 13px; color: var(--muted); line-height: 1.5;
+}
+.log-item:last-child { border-bottom: none; }
+.log-dot { width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: #fff; }
+.log-dot.ok { background: var(--green); }
+.log-dot.bad { background: var(--red); }
+
+
+.confetti-piece {
+  position: fixed; top: -10px;
+  width: 8px; height: 12px;
+  border-radius: 2px;
+  animation: confettiFall linear forwards;
+  pointer-events: none; z-index: 100;
+}
+@keyframes confettiFall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+
+@media (max-width: 480px) {
+  .quiz-bubble { width: 160px; font-size: 12px; }
+  .quiz-char-col { width: 72px; }
+  .quiz-char-col svg { width: 72px; }
+  .game-title { font-size: 28px; }
+}
+</style>
+</head>
+<body>
+
+<div class="sky-bg">
+  <div class="cloud cloud-1"></div>
+  <div class="cloud cloud-2"></div>
+  <div class="cloud cloud-3"></div>
+</div>
+
+<div id="app">
+
+
+<div id="screen-home" class="screen active">
+
+  <div class="topbar">
+    <div class="topbar-logo">🇮🇩 Pejuang Muda</div>
+    <div style="font-size:12px;color:var(--muted)">Edukasi Kemerdekaan RI</div>
+  </div>
+
+  <div id="home-title-block">
+    <div class="badge-kemerdekaan">17 Agustus 1945</div>
+    <h1 class="game-title">Kuis Pejuang<br>Kemerdekaan</h1>
+    <p class="game-subtitle">Bantu para pahlawan menjawab soal sejarah!</p>
+  </div>
+
+  <!-- CHARACTER STAGE -->
+  <div class="char-stage">
+    <!-- Bubble Pak Guru -->
+    <div class="char-wrap" style="margin-right: -10px; z-index: 2;">
+      <div class="speech-bubble left" id="home-bubble" style="top:-52px; left:10px; font-size:12px;">
+        Ayo kita belajar<br>sejarah bersama! 📖
+      </div>
+      <!-- Pak Guru SVG -->
+      <svg width="110" height="175" viewBox="0 0 110 175" class="char-idle" xmlns="http://www.w3.org/2000/svg">
+        <!-- Peci (hat) -->
+        <ellipse cx="55" cy="26" rx="26" ry="8" fill="#1A1A1A"/>
+        <rect x="29" y="18" width="52" height="14" rx="4" fill="#1A1A1A"/>
+        <!-- Head -->
+        <ellipse cx="55" cy="46" rx="24" ry="26" fill="#D4956A"/>
+        <!-- Eyes -->
+        <ellipse cx="46" cy="44" rx="4" ry="5" fill="#fff"/>
+        <ellipse cx="64" cy="44" rx="4" ry="5" fill="#fff"/>
+        <circle cx="47" cy="45" r="2.5" fill="#3A2010"/>
+        <circle cx="65" cy="45" r="2.5" fill="#3A2010"/>
+        <circle cx="48" cy="44" r="1" fill="#fff"/>
+        <circle cx="66" cy="44" r="1" fill="#fff"/>
+        <!-- Eyebrows -->
+        <path d="M42 38 Q46 35 50 38" stroke="#3A2010" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M60 38 Q64 35 68 38" stroke="#3A2010" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <!-- Mustache -->
+        <path d="M47 57 Q55 61 63 57" stroke="#3A2010" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <!-- Smile -->
+        <path d="M48 62 Q55 68 62 62" stroke="#B07045" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <!-- Ear -->
+        <ellipse cx="31" cy="47" rx="4" ry="5" fill="#C07A4A"/>
+        <ellipse cx="79" cy="47" rx="4" ry="5" fill="#C07A4A"/>
+        <!-- Neck -->
+        <rect x="49" y="70" width="12" height="12" rx="3" fill="#D4956A"/>
+        <!-- Body (batik shirt) -->
+        <rect x="26" y="80" width="58" height="62" rx="10" fill="#C8A020"/>
+        <!-- Batik pattern -->
+        <circle cx="40" cy="95" r="4" fill="#A07010" opacity="0.6"/>
+        <circle cx="55" cy="88" r="3" fill="#A07010" opacity="0.5"/>
+        <circle cx="70" cy="95" r="4" fill="#A07010" opacity="0.6"/>
+        <circle cx="45" cy="110" r="3" fill="#A07010" opacity="0.5"/>
+        <circle cx="62" cy="115" r="4" fill="#A07010" opacity="0.6"/>
+        <!-- Collar -->
+        <path d="M46 80 L55 92 L64 80" fill="#B08010"/>
+        <!-- Belt -->
+        <rect x="26" y="132" width="58" height="8" rx="3" fill="#5C3A1E"/>
+        <rect x="50" y="133" width="10" height="6" rx="2" fill="#D4A017"/>
+        <!-- Trousers -->
+        <rect x="28" y="138" width="24" height="38" rx="6" fill="#2C3E6A"/>
+        <rect x="58" y="138" width="24" height="38" rx="6" fill="#2C3E6A"/>
+        <!-- Arms -->
+        <rect x="8" y="82" width="20" height="44" rx="10" fill="#D4956A"/>
+        <rect x="82" y="82" width="20" height="44" rx="10" fill="#D4956A"/>
+        <!-- Book in right hand -->
+        <rect x="82" y="116" width="26" height="20" rx="3" fill="#CC2B2B"/>
+        <rect x="84" y="118" width="22" height="2" rx="1" fill="#fff" opacity="0.5"/>
+        <rect x="84" y="122" width="18" height="2" rx="1" fill="#fff" opacity="0.5"/>
+        <rect x="84" y="126" width="20" height="2" rx="1" fill="#fff" opacity="0.5"/>
+        <!-- Shoes -->
+        <ellipse cx="40" cy="178" rx="14" ry="6" fill="#1A1A1A"/>
+        <ellipse cx="70" cy="178" rx="14" ry="6" fill="#1A1A1A"/>
+      </svg>
+      <div class="char-label">Pak Budi</div>
+    </div>
+
+    <!-- Siti (girl student) -->
+    <div class="char-wrap" style="z-index: 3;">
+      <!-- Flag -->
+      <svg width="60" height="100" viewBox="0 0 60 100" style="position:absolute;top:-90px;left:50px;z-index:4" xmlns="http://www.w3.org/2000/svg">
+        <rect x="28" y="0" width="3" height="100" fill="#5C3A1E"/>
+        <rect class="flag-wave" x="30" y="2" width="44" height="13" fill="#CC2B2B" rx="1"/>
+        <rect class="flag-wave" x="30" y="15" width="44" height="13" fill="#fff" rx="1"/>
+      </svg>
+      <svg width="120" height="185" viewBox="0 0 120 185" class="char-idle-2" xmlns="http://www.w3.org/2000/svg">
+        <!-- Hijab/Kerudung -->
+        <ellipse cx="60" cy="38" rx="30" ry="30" fill="#CC2B2B"/>
+        <rect x="30" y="38" width="60" height="35" rx="0" fill="#CC2B2B"/>
+        <ellipse cx="60" cy="72" rx="30" ry="10" fill="#CC2B2B"/>
+        <!-- Face -->
+        <ellipse cx="60" cy="42" rx="22" ry="24" fill="#E8B080"/>
+        <!-- Eyes -->
+        <ellipse cx="51" cy="40" rx="4" ry="5" fill="#fff"/>
+        <ellipse cx="69" cy="40" rx="4" ry="5" fill="#fff"/>
+        <circle cx="52" cy="41" r="2.5" fill="#3A1A00"/>
+        <circle cx="70" cy="41" r="2.5" fill="#3A1A00"/>
+        <circle cx="53" cy="40" r="1" fill="#fff"/>
+        <circle cx="71" cy="40" r="1" fill="#fff"/>
+        <!-- Lashes -->
+        <path d="M48 36 L49 33 M51 35 L51 32 M54 36 L55 33" stroke="#3A1A00" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M66 36 L67 33 M69 35 L69 32 M72 36 L73 33" stroke="#3A1A00" stroke-width="1.5" stroke-linecap="round"/>
+        <!-- Blush -->
+        <ellipse cx="44" cy="47" rx="6" ry="3" fill="#FFAAAA" opacity="0.5"/>
+        <ellipse cx="76" cy="47" rx="6" ry="3" fill="#FFAAAA" opacity="0.5"/>
+        <!-- Smile -->
+        <path d="M52 52 Q60 58 68 52" stroke="#C07050" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <!-- Ears -->
+        <ellipse cx="38" cy="43" rx="3.5" ry="4" fill="#D4906A"/>
+        <ellipse cx="82" cy="43" rx="3.5" ry="4" fill="#D4906A"/>
+        <!-- Body (white dress / seragam) -->
+        <rect x="30" y="78" width="60" height="68" rx="10" fill="#FFFFFF"/>
+        <!-- Red ribbon/dasi -->
+        <path d="M56 78 L60 90 L64 78" fill="#CC2B2B"/>
+        <rect x="57" y="90" width="6" height="14" rx="2" fill="#CC2B2B"/>
+        <!-- Pocket -->
+        <rect x="38" y="100" width="18" height="14" rx="4" fill="#E8E8E8" stroke="#ddd" stroke-width="1"/>
+        <!-- Skirt -->
+        <rect x="28" y="140" width="64" height="20" rx="6" fill="#1A3A8A"/>
+        <!-- Legs -->
+        <rect x="35" y="155" width="18" height="32" rx="6" fill="#FFFFFF"/>
+        <rect x="67" y="155" width="18" height="32" rx="6" fill="#FFFFFF"/>
+        <!-- Arms -->
+        <rect x="10" y="80" width="22" height="46" rx="11" fill="#E8B080"/>
+        <rect x="88" y="80" width="22" height="46" rx="11" fill="#E8B080"/>
+        <!-- Hands -->
+        <ellipse cx="21" cy="130" rx="10" ry="8" fill="#E8B080"/>
+        <ellipse cx="99" cy="130" rx="10" ry="8" fill="#E8B080"/>
+        <!-- Shoes -->
+        <ellipse cx="44" cy="189" rx="13" ry="5" fill="#1A1A1A"/>
+        <ellipse cx="76" cy="189" rx="13" ry="5" fill="#1A1A1A"/>
+      </svg>
+      <div class="char-label">Siti</div>
+    </div>
+
+    <!-- Budi (boy student) -->
+    <div class="char-wrap" style="margin-left: -14px; z-index: 2;">
+      <svg width="105" height="170" viewBox="0 0 105 170" class="char-idle-3" xmlns="http://www.w3.org/2000/svg">
+        <!-- Hair -->
+        <ellipse cx="52" cy="26" rx="26" ry="18" fill="#1A0A00"/>
+        <rect x="26" y="26" width="52" height="10" fill="#1A0A00"/>
+        <!-- Head -->
+        <ellipse cx="52" cy="44" rx="24" ry="26" fill="#C8784A"/>
+        <!-- Eyes -->
+        <ellipse cx="43" cy="42" rx="4" ry="5" fill="#fff"/>
+        <ellipse cx="61" cy="42" rx="4" ry="5" fill="#fff"/>
+        <circle cx="44" cy="43" r="2.5" fill="#1A0A00"/>
+        <circle cx="62" cy="43" r="2.5" fill="#1A0A00"/>
+        <circle cx="45" cy="42" r="1" fill="#fff"/>
+        <circle cx="63" cy="42" r="1" fill="#fff"/>
+        <!-- Eyebrows -->
+        <path d="M39 36 Q43 33 47 36" stroke="#1A0A00" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M57 36 Q61 33 65 36" stroke="#1A0A00" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <!-- Smile big -->
+        <path d="M43 56 Q52 64 61 56" stroke="#A05030" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <!-- Ear -->
+        <ellipse cx="28" cy="45" rx="4" ry="5" fill="#B86830"/>
+        <ellipse cx="76" cy="45" rx="4" ry="5" fill="#B86830"/>
+        <!-- Neck -->
+        <rect x="46" y="68" width="12" height="12" rx="3" fill="#C8784A"/>
+        <!-- Body (seragam putih) -->
+        <rect x="24" y="78" width="56" height="62" rx="10" fill="#FFFFFF"/>
+        <!-- Red tie -->
+        <path d="M48 78 L52 88 L56 78" fill="#CC2B2B"/>
+        <rect x="49" y="88" width="6" height="16" rx="2" fill="#CC2B2B"/>
+        <!-- Pocket badge -->
+        <rect x="32" y="96" width="16" height="12" rx="3" fill="#E8E8E8" stroke="#ddd" stroke-width="1"/>
+        <!-- Trousers -->
+        <rect x="26" y="136" width="22" height="36" rx="6" fill="#1A3A8A"/>
+        <rect x="56" y="136" width="22" height="36" rx="6" fill="#1A3A8A"/>
+        <!-- Arms -->
+        <rect x="6" y="80" width="20" height="44" rx="10" fill="#C8784A"/>
+        <rect x="79" y="80" width="20" height="44" rx="10" fill="#C8784A"/>
+        <!-- Hands -->
+        <ellipse cx="16" cy="126" rx="9" ry="7" fill="#C8784A"/>
+        <ellipse cx="89" cy="126" rx="9" ry="7" fill="#C8784A"/>
+        <!-- Shoes -->
+        <ellipse cx="37" cy="174" rx="13" ry="5" fill="#1A1A1A"/>
+        <ellipse cx="67" cy="174" rx="13" ry="5" fill="#1A1A1A"/>
+      </svg>
+      <div class="char-label">Budi</div>
+    </div>
+  </div><!-- end char-stage -->
+
+  <div class="info-box">
+    <div class="info-icon">🏫</div>
+    <div class="info-text">
+      Pak Budi, Siti, dan Budi mengajakmu belajar sejarah perjuangan kemerdekaan RI! Ada <strong>20 soal</strong> seru tentang Proklamasi, Pahlawan, dan Simbol Negara.
+    </div>
+  </div>
+
+  <div class="mode-grid">
+    <div class="mode-card selected" data-mode="easy" onclick="pickMode(this,'easy')">
+      <span class="mode-icon-big">⭐</span>
+      <div class="mode-name">Pemula</div>
+      <div class="mode-detail">10 soal · 30 detik/soal</div>
+      <span class="mode-tag tag-easy">Santai</span>
+    </div>
+    <div class="mode-card" data-mode="hard" onclick="pickMode(this,'hard')">
+      <span class="mode-icon-big">🔥</span>
+      <div class="mode-name">Pejuang</div>
+      <div class="mode-detail">15 soal · 20 detik/soal</div>
+      <span class="mode-tag tag-hard">Menantang</span>
+    </div>
+  </div>
+
+  <button class="btn btn-red" onclick="startGame()">⚔️ Mulai Berjuang!</button>
+
+</div><!-- /home -->
+
+
+
+<div id="screen-quiz" class="screen">
+
+  <div class="topbar">
+    <div class="topbar-logo">🇮🇩 Pejuang Muda</div>
+    <button onclick="goHome()" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--muted);padding:4px 10px;border-radius:6px;border:1px solid var(--border);">✕ Keluar</button>
+  </div>
+
+  <div class="quiz-hud">
+    <div class="hud-score">⭐ <span id="q-score">0</span></div>
+    <div class="hud-q" id="q-count">Soal 1 / 10</div>
+    <div class="hud-timer" id="q-timer">30s</div>
+  </div>
+
+  <div class="prog-bar-bg">
+    <div class="prog-bar-fill" id="q-prog" style="width:0%"></div>
+  </div>
+
+  <div class="quiz-layout">
+    <!-- Question card (full width, no overlap) -->
+    <div class="quiz-question-card">
+      <div class="cat-pill" id="q-cat">📜 Proklamasi</div>
+      <div class="question-text" id="q-text">Memuat soal...</div>
+    </div>
+
+    <!-- Character row: char on left, bubble on right -->
+    <div class="quiz-char-row">
+      <div class="quiz-char-col">
+        <svg width="80" height="130" viewBox="0 0 90 150" class="char-idle" id="quiz-char-svg" xmlns="http://www.w3.org/2000/svg">
+          <!-- Peci -->
+          <ellipse cx="45" cy="18" rx="22" ry="7" fill="#1A1A1A"/>
+          <rect x="23" y="12" width="44" height="12" rx="3" fill="#1A1A1A"/>
+          <!-- Head -->
+          <ellipse cx="45" cy="36" rx="20" ry="22" fill="#D4956A"/>
+          <!-- Eyes -->
+          <ellipse cx="37" cy="34" rx="3.5" ry="4.5" fill="#fff"/>
+          <ellipse cx="53" cy="34" rx="3.5" ry="4.5" fill="#fff"/>
+          <circle cx="38" cy="35" r="2" fill="#3A2010"/>
+          <circle cx="54" cy="35" r="2" fill="#3A2010"/>
+          <!-- Eyebrows -->
+          <path d="M33 28 Q37 26 41 28" stroke="#3A2010" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+          <path d="M49 28 Q53 26 57 28" stroke="#3A2010" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+          <!-- Mustache -->
+          <path d="M38 46 Q45 50 52 46" stroke="#3A2010" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <!-- Smile -->
+          <path d="M39 51 Q45 56 51 51" stroke="#B07045" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+          <!-- Ear -->
+          <ellipse cx="25" cy="37" rx="3.5" ry="4.5" fill="#C07A4A"/>
+          <ellipse cx="65" cy="37" rx="3.5" ry="4.5" fill="#C07A4A"/>
+          <!-- Body -->
+          <rect x="20" y="56" width="50" height="54" rx="9" fill="#C8A020"/>
+          <!-- Batik dots -->
+          <circle cx="32" cy="70" r="3.5" fill="#A07010" opacity="0.5"/>
+          <circle cx="45" cy="64" r="2.5" fill="#A07010" opacity="0.5"/>
+          <circle cx="58" cy="70" r="3.5" fill="#A07010" opacity="0.5"/>
+          <circle cx="37" cy="84" r="2.5" fill="#A07010" opacity="0.5"/>
+          <circle cx="53" cy="90" r="3.5" fill="#A07010" opacity="0.5"/>
+          <!-- Collar -->
+          <path d="M38 56 L45 66 L52 56" fill="#B08010"/>
+          <!-- Belt -->
+          <rect x="20" y="103" width="50" height="7" rx="3" fill="#5C3A1E"/>
+          <rect x="40" y="104" width="10" height="5" rx="2" fill="#D4A017"/>
+          <!-- Legs -->
+          <rect x="22" y="108" width="20" height="32" rx="5" fill="#2C3E6A"/>
+          <rect x="48" y="108" width="20" height="32" rx="5" fill="#2C3E6A"/>
+          <!-- Arms -->
+          <rect x="4" y="58" width="17" height="38" rx="8" fill="#D4956A"/>
+          <rect x="69" y="58" width="17" height="38" rx="8" fill="#D4956A"/>
+          <!-- Book -->
+          <rect x="69" y="88" width="22" height="16" rx="3" fill="#CC2B2B"/>
+          <rect x="71" y="90" width="18" height="2" rx="1" fill="#fff" opacity="0.5"/>
+          <rect x="71" y="94" width="14" height="2" rx="1" fill="#fff" opacity="0.5"/>
+          <!-- Shoes -->
+          <ellipse cx="32" cy="142" rx="11" ry="5" fill="#1A1A1A"/>
+          <ellipse cx="58" cy="142" rx="11" ry="5" fill="#1A1A1A"/>
+        </svg>
+      </div>
+      <!-- Bubble: beside character, normal flow -->
+      <div class="quiz-bubble" id="quiz-bubble">
+        <div id="quiz-bubble-main">Siap?</div>
+        <div class="quiz-bubble-text" id="quiz-bubble-sub">Pilih jawaban yang benar!</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="options" id="q-opts"></div>
+  <div class="feedback" id="q-feedback">
+    <span class="feedback-icon" id="fb-icon">✅</span>
+    <span id="fb-text"></span>
+  </div>
+  <button class="btn btn-red" id="btn-next" style="display:none" onclick="nextQ()">Lanjut →</button>
+
+</div><!-- /quiz -->
+
+
+<!-- ======= RESULT SCREEN ======= -->
+<div id="screen-result" class="screen">
+  <div class="topbar">
+    <div class="topbar-logo">🇮🇩 Pejuang Muda</div>
+  </div>
+
+  <div style="text-align:center;padding-top:0.5rem;">
+    <span class="result-medal-big" id="r-medal">🏆</span>
+    <h2 class="result-title" id="r-title">Pahlawan Pengetahuan!</h2>
+    <p class="result-msg" id="r-msg"></p>
+  </div>
+
+  <!-- Result characters -->
+  <div class="result-char-row">
+    <svg width="80" height="130" viewBox="0 0 90 150" class="char-idle" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="45" cy="18" rx="22" ry="7" fill="#1A1A1A"/>
+      <rect x="23" y="12" width="44" height="12" rx="3" fill="#1A1A1A"/>
+      <ellipse cx="45" cy="36" rx="20" ry="22" fill="#D4956A"/>
+      <ellipse cx="37" cy="34" rx="3.5" ry="4.5" fill="#fff"/><ellipse cx="53" cy="34" rx="3.5" ry="4.5" fill="#fff"/>
+      <circle cx="38" cy="35" r="2" fill="#3A2010"/><circle cx="54" cy="35" r="2" fill="#3A2010"/>
+      <path d="M33 28 Q37 26 41 28" stroke="#3A2010" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+      <path d="M49 28 Q53 26 57 28" stroke="#3A2010" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+      <path d="M38 46 Q45 50 52 46" stroke="#3A2010" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M39 51 Q45 56 51 51" stroke="#B07045" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+      <ellipse cx="25" cy="37" rx="3.5" ry="4.5" fill="#C07A4A"/><ellipse cx="65" cy="37" rx="3.5" ry="4.5" fill="#C07A4A"/>
+      <rect x="20" y="56" width="50" height="54" rx="9" fill="#C8A020"/>
+      <circle cx="32" cy="70" r="3.5" fill="#A07010" opacity="0.5"/><circle cx="45" cy="64" r="2.5" fill="#A07010" opacity="0.5"/><circle cx="58" cy="70" r="3.5" fill="#A07010" opacity="0.5"/>
+      <path d="M38 56 L45 66 L52 56" fill="#B08010"/>
+      <rect x="20" y="103" width="50" height="7" rx="3" fill="#5C3A1E"/>
+      <rect x="22" y="108" width="20" height="32" rx="5" fill="#2C3E6A"/><rect x="48" y="108" width="20" height="32" rx="5" fill="#2C3E6A"/>
+      <rect x="4" y="58" width="17" height="38" rx="8" fill="#D4956A"/><rect x="69" y="58" width="17" height="38" rx="8" fill="#D4956A"/>
+      <ellipse cx="32" cy="142" rx="11" ry="5" fill="#1A1A1A"/><ellipse cx="58" cy="142" rx="11" ry="5" fill="#1A1A1A"/>
+    </svg>
+    <svg width="90" height="145" viewBox="0 0 120 185" class="char-idle-2" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="60" cy="38" rx="30" ry="30" fill="#CC2B2B"/>
+      <rect x="30" y="38" width="60" height="35" fill="#CC2B2B"/>
+      <ellipse cx="60" cy="72" rx="30" ry="10" fill="#CC2B2B"/>
+      <ellipse cx="60" cy="42" rx="22" ry="24" fill="#E8B080"/>
+      <ellipse cx="51" cy="40" rx="4" ry="5" fill="#fff"/><ellipse cx="69" cy="40" rx="4" ry="5" fill="#fff"/>
+      <circle cx="52" cy="41" r="2.5" fill="#3A1A00"/><circle cx="70" cy="41" r="2.5" fill="#3A1A00"/>
+      <ellipse cx="44" cy="47" rx="6" ry="3" fill="#FFAAAA" opacity="0.5"/>
+      <ellipse cx="76" cy="47" rx="6" ry="3" fill="#FFAAAA" opacity="0.5"/>
+      <path d="M52 52 Q60 58 68 52" stroke="#C07050" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <ellipse cx="38" cy="43" rx="3.5" ry="4" fill="#D4906A"/><ellipse cx="82" cy="43" rx="3.5" ry="4" fill="#D4906A"/>
+      <rect x="30" y="78" width="60" height="68" rx="10" fill="#FFFFFF"/>
+      <path d="M56 78 L60 90 L64 78" fill="#CC2B2B"/>
+      <rect x="57" y="90" width="6" height="14" rx="2" fill="#CC2B2B"/>
+      <rect x="28" y="140" width="64" height="20" rx="6" fill="#1A3A8A"/>
+      <rect x="35" y="155" width="18" height="32" rx="6" fill="#FFFFFF"/><rect x="67" y="155" width="18" height="32" rx="6" fill="#FFFFFF"/>
+      <rect x="10" y="80" width="22" height="46" rx="11" fill="#E8B080"/><rect x="88" y="80" width="22" height="46" rx="11" fill="#E8B080"/>
+      <ellipse cx="44" cy="189" rx="13" ry="5" fill="#1A1A1A"/><ellipse cx="76" cy="189" rx="13" ry="5" fill="#1A1A1A"/>
+    </svg>
+    <svg width="80" height="130" viewBox="0 0 105 170" class="char-idle-3" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="52" cy="26" rx="26" ry="18" fill="#1A0A00"/><rect x="26" y="26" width="52" height="10" fill="#1A0A00"/>
+      <ellipse cx="52" cy="44" rx="24" ry="26" fill="#C8784A"/>
+      <ellipse cx="43" cy="42" rx="4" ry="5" fill="#fff"/><ellipse cx="61" cy="42" rx="4" ry="5" fill="#fff"/>
+      <circle cx="44" cy="43" r="2.5" fill="#1A0A00"/><circle cx="62" cy="43" r="2.5" fill="#1A0A00"/>
+      <path d="M39 36 Q43 33 47 36" stroke="#1A0A00" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M57 36 Q61 33 65 36" stroke="#1A0A00" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M43 56 Q52 64 61 56" stroke="#A05030" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <ellipse cx="28" cy="45" rx="4" ry="5" fill="#B86830"/><ellipse cx="76" cy="45" rx="4" ry="5" fill="#B86830"/>
+      <rect x="24" y="78" width="56" height="62" rx="10" fill="#FFFFFF"/>
+      <path d="M48 78 L52 88 L56 78" fill="#CC2B2B"/>
+      <rect x="49" y="88" width="6" height="16" rx="2" fill="#CC2B2B"/>
+      <rect x="26" y="136" width="22" height="36" rx="6" fill="#1A3A8A"/><rect x="56" y="136" width="22" height="36" rx="6" fill="#1A3A8A"/>
+      <rect x="6" y="80" width="20" height="44" rx="10" fill="#C8784A"/><rect x="79" y="80" width="20" height="44" rx="10" fill="#C8784A"/>
+      <ellipse cx="37" cy="174" rx="13" ry="5" fill="#1A1A1A"/><ellipse cx="67" cy="174" rx="13" ry="5" fill="#1A1A1A"/>
+    </svg>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-num" id="r-score">0</div><div class="stat-label">Total Skor</div></div>
+    <div class="stat-box"><div class="stat-num" id="r-correct">0/0</div><div class="stat-label">Jawaban Benar</div></div>
+    <div class="stat-box"><div class="stat-num" id="r-avg">0s</div><div class="stat-label">Waktu Rata-rata</div></div>
+  </div>
+
+  <div class="xp-bar-wrap">
+    <div class="xp-label" id="xp-label">XP Pejuang: 0 / 300</div>
+    <div class="xp-bg"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
+  </div>
+
+  <div class="log-section">
+    <div class="log-title">Rekap Jawaban</div>
+    <div id="r-log"></div>
+  </div>
+
+  <button class="btn btn-red" onclick="replayGame()">🔄 Main Lagi</button>
+  <button class="btn btn-outline" onclick="goHome()">🏠 Menu Utama</button>
+
+</div><!-- /result -->
+
+</div><!-- /app -->
+
+<script>
+// ==================== DATA ====================
+const QUESTIONS = [
+  {cat:"📜 Proklamasi",q:"Kapan Proklamasi Kemerdekaan Indonesia dibacakan?",opts:["17 Agustus 1945","17 Agustus 1942","15 Agustus 1945","20 Agustus 1945"],a:0,info:"Proklamasi dibacakan Soekarno pada 17 Agustus 1945 pukul 10.00 WIB di Jl. Pegangsaan Timur No. 56, Jakarta."},
+  {cat:"👤 Tokoh",q:"Siapakah yang membacakan teks Proklamasi Kemerdekaan Indonesia?",opts:["Soekarno dan Hatta","Soekarno saja","Hatta saja","Soekarno, Hatta, dan Soepomo"],a:0,info:"Proklamasi dibacakan Ir. Soekarno didampingi Drs. Mohammad Hatta atas nama bangsa Indonesia."},
+  {cat:"📍 Peristiwa",q:"Apa nama peristiwa 'penculikan' Soekarno-Hatta oleh golongan muda sebelum Proklamasi?",opts:["Peristiwa Madiun","Peristiwa Rengasdengklok","Peristiwa Linggarjati","Peristiwa Renville"],a:1,info:"Golongan muda membawa Soekarno-Hatta ke Rengasdengklok (16 Agustus 1945) agar segera memproklamasikan kemerdekaan."},
+  {cat:"👤 Tokoh",q:"Siapakah pengetik naskah Proklamasi Kemerdekaan Indonesia?",opts:["Chairul Saleh","Sayuti Melik","Wikana","Sukarni"],a:1,info:"Sayuti Melik mengetik naskah Proklamasi dari tulisan tangan Soekarno dengan sedikit perubahan redaksi."},
+  {cat:"📜 Proklamasi",q:"Pada tanggal berapa Jepang menyerah kepada Sekutu sehingga mendorong proklamasi RI?",opts:["14 Agustus 1945","6 Agustus 1945","9 Agustus 1945","1 September 1945"],a:0,info:"Jepang resmi menyerah pada 14 Agustus 1945 setelah bom atom dijatuhkan di Hiroshima (6/8) dan Nagasaki (9/8)."},
+  {cat:"🏳️ Simbol Negara",q:"Siapakah yang menjahit Bendera Merah Putih untuk upacara Proklamasi?",opts:["Fatmawati","Cut Nyak Dhien","Kartini","Dewi Sartika"],a:0,info:"Fatmawati, istri Soekarno, menjahit Bendera Sang Merah Putih yang dikibarkan pada upacara Proklamasi 17 Agustus 1945."},
+  {cat:"👤 Tokoh",q:"Siapakah dua Bapak Proklamator Indonesia?",opts:["Soekarno saja","Hatta saja","Soekarno dan Hatta","Soepomo dan Yamin"],a:2,info:"Soekarno dan Mohammad Hatta dikenal sebagai Dwitunggal — dua proklamator kemerdekaan Indonesia."},
+  {cat:"📚 Sejarah",q:"BPUPKI adalah singkatan dari…",opts:["Badan Penyelidik Usaha Persiapan Kemerdekaan Indonesia","Badan Pemuda Usaha Pejuang Kemerdekaan Indonesia","Badan Penyelenggara Upacara Proklamasi","Badan Persatuan Usaha Perjuangan Kebangsaan"],a:0,info:"BPUPKI dibentuk Jepang pada 29 April 1945 untuk mempersiapkan kemerdekaan Indonesia."},
+  {cat:"📚 Sejarah",q:"Siapakah yang memimpin PPKI (Panitia Persiapan Kemerdekaan Indonesia)?",opts:["Mohammad Hatta","Soekarno","Soepomo","Radjiman Wedyodiningrat"],a:1,info:"Soekarno menjadi ketua PPKI yang dibentuk 7 Agustus 1945, menggantikan BPUPKI yang dibubarkan."},
+  {cat:"📚 Sejarah",q:"Siapakah yang mengusulkan nama 'Pancasila' sebagai dasar negara pada sidang BPUPKI?",opts:["Mohammad Yamin","Soepomo","Soekarno","Hatta"],a:2,info:"Pada 1 Juni 1945, Soekarno menyampaikan pidato berisi gagasan Pancasila dan mengusulkan nama tersebut."},
+  {cat:"⚔️ Pahlawan",q:"Pahlawan Surabaya yang membakar semangat lewat siaran radio saat pertempuran 10 November 1945 adalah…",opts:["Bung Tomo","W.R. Supratman","Jenderal Sudirman","Urip Sumoharjo"],a:0,info:"Sutomo (Bung Tomo) membakar semangat arek-arek Surabaya. Tanggal 10 November kini diperingati sebagai Hari Pahlawan."},
+  {cat:"🏳️ Simbol Negara",q:"Lagu kebangsaan Indonesia Raya diciptakan oleh…",opts:["Ismail Marzuki","W.R. Supratman","Gesang","Cornel Simanjuntak"],a:1,info:"Wage Rudolf Supratman menciptakan Indonesia Raya dan pertama kali memperdengarkannya pada Kongres Pemuda II, 28 Oktober 1928."},
+  {cat:"📍 Peristiwa",q:"Perjanjian yang mengakui kedaulatan Republik Indonesia oleh Belanda adalah…",opts:["Perjanjian Renville","Perjanjian Linggarjati","Konferensi Meja Bundar","Perjanjian Roem-Roijen"],a:2,info:"KMB (Agustus–November 1949) di Den Haag menghasilkan pengakuan kedaulatan RIS oleh Belanda pada 27 Desember 1949."},
+  {cat:"⚔️ Pahlawan",q:"Sumpah Pemuda diikrarkan pada tanggal…",opts:["17 Agustus 1945","28 Oktober 1928","20 Mei 1908","2 Mei 1945"],a:1,info:"Sumpah Pemuda diikrarkan pada Kongres Pemuda II, 28 Oktober 1928: satu tanah air, satu bangsa, satu bahasa — Indonesia."},
+  {cat:"📚 Sejarah",q:"Gerakan Budi Utomo sebagai tonggak kebangkitan nasional berdiri pada tahun…",opts:["1908","1912","1920","1900"],a:0,info:"Budi Utomo didirikan 20 Mei 1908 oleh Dr. Soetomo dan mahasiswa STOVIA. Tanggal itu diperingati sebagai Hari Kebangkitan Nasional."},
+  {cat:"⚔️ Pahlawan",q:"Panglima Besar TNI pertama yang memimpin perang gerilya melawan Belanda adalah…",opts:["Jenderal A.H. Nasution","Jenderal Sudirman","Urip Sumoharjo","T.B. Simatupang"],a:1,info:"Jenderal Soedirman memimpin perang gerilya melawan Agresi Militer Belanda, bahkan dalam kondisi sakit parah."},
+  {cat:"📍 Peristiwa",q:"Agresi Militer Belanda II yang menangkap Soekarno-Hatta terjadi pada tahun…",opts:["1947","1948","1949","1950"],a:1,info:"Agresi Militer II (19 Desember 1948) berhasil menangkap Soekarno dan Hatta, namun tekanan internasional memaksa Belanda mundur."},
+  {cat:"🏳️ Simbol Negara",q:"Lambang negara Garuda Pancasila dirancang oleh…",opts:["Sultan Hamid II","Soekarno","Ki Hajar Dewantara","Mohammad Yamin"],a:0,info:"Sultan Hamid II dari Pontianak merancang Garuda Pancasila, yang disempurnakan Soekarno dan ditetapkan 11 Februari 1950."},
+  {cat:"📜 Proklamasi",q:"Di manakah naskah Proklamasi dirumuskan dan ditandatangani?",opts:["Jl. Pegangsaan Timur 56","Rumah Laksamana Maeda","Istana Merdeka","Gedung Joang 45"],a:1,info:"Naskah Proklamasi dirumuskan di rumah Laksamana Tadashi Maeda di Jl. Imam Bonjol 1 pada dini hari 17 Agustus 1945."},
+  {cat:"📚 Sejarah",q:"Hari Pendidikan Nasional diperingati setiap tanggal 2 Mei untuk mengenang hari lahir…",opts:["Ki Hajar Dewantara","R.A. Kartini","Bung Hatta","Dr. Wahidin Sudirohusodo"],a:0,info:"Ki Hajar Dewantara (lahir 2 Mei 1889) adalah Bapak Pendidikan Nasional dan pendiri Taman Siswa."},
+];
+
+const BUBBLES_CORRECT = ["Hebat sekali! 🎉","Benar! Kamu pejuang sejati!","Mantap, terus semangat!","Luar biasa! ✨","Betul! Kamu bangga bangsa!"];
+const BUBBLES_WRONG = ["Jangan menyerah! 💪","Yuk baca lagi sejarahnya!","Hampir! Pelajari lagi yuk!","Salah, tapi tetap semangat!","Kita belajar bersama! 📖"];
+const BUBBLES_TIMEOUT = ["Waktunya habis! ⏰","Lebih cepat ya next soal!","Ayo fokus, bisa kamu! 💪"];
+
+// ==================== STATE ====================
+let mode = 'easy', questions = [], qIdx = 0, score = 0;
+let timer = null, timeLeft = 30, timesUsed = [], answers = [];
+
+// ==================== UI HELPERS ====================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+}
+
+function pickMode(el, m) {
+  document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  mode = m;
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function randFrom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+function setBubble(main, sub) {
+  document.getElementById('quiz-bubble-main').textContent = main;
+  document.getElementById('quiz-bubble-sub').textContent = sub || '';
+}
+
+// ==================== GAME FLOW ====================
+function startGame() {
+  const count = mode === 'easy' ? 10 : 15;
+  questions = shuffle(QUESTIONS).slice(0, count);
+  qIdx = 0; score = 0; answers = []; timesUsed = [];
+  showScreen('quiz');
+  loadQ();
+}
+
+function loadQ() {
+  const limit = mode === 'easy' ? 30 : 20;
+  const total = questions.length;
+  const q = questions[qIdx];
+
+  document.getElementById('q-count').textContent = `Soal ${qIdx + 1} / ${total}`;
+  document.getElementById('q-prog').style.width = `${(qIdx / total) * 100}%`;
+  document.getElementById('q-score').textContent = score;
+  document.getElementById('q-cat').textContent = q.cat;
+  document.getElementById('q-text').textContent = q.q;
+
+  setBubble('Pikir baik-baik!', 'Kamu pasti bisa!');
+
+  // clear feedback
+  const fb = document.getElementById('q-feedback');
+  fb.className = 'feedback';
+  fb.style.display = 'none';
+  document.getElementById('btn-next').style.display = 'none';
+
+  // build options
+  const letters = ['A','B','C','D'];
+  const optsEl = document.getElementById('q-opts');
+  optsEl.innerHTML = '';
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.innerHTML = `<span class="opt-letter">${letters[i]}</span><span>${opt}</span>`;
+    btn.onclick = () => pickAnswer(i, limit);
+    optsEl.appendChild(btn);
+  });
+
+  // timer
+  timeLeft = limit;
+  updateTimer();
+  clearInterval(timer);
+  timer = setInterval(() => {
+    timeLeft--;
+    updateTimer();
+    if (timeLeft <= 0) { clearInterval(timer); handleTimeout(limit); }
+  }, 1000);
+}
+
+function updateTimer() {
+  const el = document.getElementById('q-timer');
+  el.textContent = timeLeft + 's';
+  if (timeLeft <= 5) el.className = 'hud-timer critical';
+  else if (timeLeft <= 10) el.className = 'hud-timer danger';
+  else el.className = 'hud-timer';
+}
+
+function pickAnswer(idx, limit) {
+  clearInterval(timer);
+  const q = questions[qIdx];
+  const elapsed = limit - timeLeft;
+  timesUsed.push(elapsed);
+
+  const opts = document.querySelectorAll('.opt');
+  opts.forEach(o => o.disabled = true);
+
+  const isCorrect = idx === q.a;
+  opts[idx].classList.add(isCorrect ? 'correct' : 'wrong');
+  if (!isCorrect) opts[q.a].classList.add('correct');
+
+  const fb = document.getElementById('q-feedback');
+  fb.style.display = 'flex';
+
+  if (isCorrect) {
+    const pts = Math.max(10, 30 - elapsed);
+    score += pts;
+    document.getElementById('q-score').textContent = score;
+    fb.className = 'feedback correct show';
+    document.getElementById('fb-icon').textContent = '✅';
+    document.getElementById('fb-text').textContent = `Benar! +${pts} poin. ${q.info}`;
+    setBubble(randFrom(BUBBLES_CORRECT), `+${pts} poin kamu dapat!`);
+    answers.push({ q: q.q, correct: true, rightAns: q.opts[q.a] });
+  } else {
+    fb.className = 'feedback wrong show';
+    document.getElementById('fb-icon').textContent = '❌';
+    document.getElementById('fb-text').textContent = `Kurang tepat. Jawaban benar: "${q.opts[q.a]}". ${q.info}`;
+    setBubble(randFrom(BUBBLES_WRONG), 'Semangat terus ya!');
+    answers.push({ q: q.q, correct: false, rightAns: q.opts[q.a] });
+  }
+
+  document.getElementById('btn-next').style.display = 'block';
+}
+
+function handleTimeout(limit) {
+  const q = questions[qIdx];
+  timesUsed.push(limit);
+  const opts = document.querySelectorAll('.opt');
+  opts.forEach((o, i) => { o.disabled = true; if (i === q.a) o.classList.add('correct'); });
+  const fb = document.getElementById('q-feedback');
+  fb.style.display = 'flex';
+  fb.className = 'feedback timeout show';
+  document.getElementById('fb-icon').textContent = '⏰';
+  document.getElementById('fb-text').textContent = `Waktu habis! Jawaban benar: "${q.opts[q.a]}". ${q.info}`;
+  setBubble(randFrom(BUBBLES_TIMEOUT), 'Lebih cepat ya next soal!');
+  answers.push({ q: q.q, correct: false, rightAns: q.opts[q.a] });
+  document.getElementById('btn-next').style.display = 'block';
+}
+
+function nextQ() {
+  qIdx++;
+  if (qIdx >= questions.length) showResult();
+  else loadQ();
+}
+
+function showResult() {
+  clearInterval(timer);
+  showScreen('result');
+
+  const correct = answers.filter(a => a.correct).length;
+  const total = answers.length;
+  const avgT = total ? Math.round(timesUsed.reduce((a, b) => a + b, 0) / total) : 0;
+  const pct = Math.round((correct / total) * 100);
+
+  document.getElementById('r-score').textContent = score;
+  document.getElementById('r-correct').textContent = `${correct}/${total}`;
+  document.getElementById('r-avg').textContent = avgT + 's';
+
+  let medal, title, msg;
+  if (pct >= 90) { medal='🏆'; title='Pahlawan Pengetahuan!'; msg=`Luar biasa! Kamu menjawab ${correct} dari ${total} soal dengan benar. Semangat pejuang sejati dalam dirimu!`; }
+  else if (pct >= 70) { medal='🎖️'; title='Pejuang Sejati!'; msg=`Bagus! ${correct} dari ${total} benar. Terus pelajari sejarah perjuangan bangsa kita.`; }
+  else if (pct >= 50) { medal='📚'; title='Pelajar Semangat!'; msg=`Cukup baik! ${correct} dari ${total} benar. Masih banyak yang bisa dipelajari, yuk semangat!`; }
+  else { medal='🌱'; title='Terus Belajar!'; msg=`${correct} dari ${total} benar. Jangan menyerah! Sejarah kemerdekaan kita sangat berharga untuk diketahui.`; }
+
+  document.getElementById('r-medal').textContent = medal;
+  document.getElementById('r-title').textContent = title;
+  document.getElementById('r-msg').textContent = msg;
+
+  // XP bar
+  const xpMax = total * 30;
+  const xpPct = Math.min(100, Math.round((score / xpMax) * 100));
+  document.getElementById('xp-label').textContent = `XP Pejuang: ${score} / ${xpMax}`;
+  setTimeout(() => { document.getElementById('xp-fill').style.width = xpPct + '%'; }, 200);
+
+  // Log
+  const logEl = document.getElementById('r-log');
+  logEl.innerHTML = answers.map(a =>
+    `<div class="log-item">
+      <div class="log-dot ${a.correct ? 'ok' : 'bad'}">${a.correct ? '✓' : '✗'}</div>
+      <div>${a.q}<br><span style="font-size:12px;color:${a.correct ? 'var(--green)' : 'var(--red)'}">
+        ${a.correct ? 'Benar ✓' : 'Jawaban: ' + a.rightAns}
+      </span></div>
+    </div>`
+  ).join('');
+
+  // Confetti for high scores
+  if (pct >= 70) spawnConfetti();
+}
+
+function spawnConfetti() {
+  const colors = ['#CC2B2B','#D4A017','#FFFFFF','#2C3E6A','#2D7A2D','#E8B080'];
+  for (let i = 0; i < 55; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      el.style.left = Math.random() * 100 + 'vw';
+      el.style.background = colors[Math.floor(Math.random() * colors.length)];
+      el.style.animationDuration = (2 + Math.random() * 2) + 's';
+      el.style.animationDelay = Math.random() * 0.5 + 's';
+      el.style.width = (6 + Math.random() * 8) + 'px';
+      el.style.height = (8 + Math.random() * 12) + 'px';
+      el.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 4000);
+    }, i * 40);
+  }
+}
+
+function replayGame() { startGame(); }
+function goHome() { clearInterval(timer); showScreen('home'); }
+
+// Bubble rotation on home
+const homeBubbles = [
+  "Ayo kita belajar sejarah bersama! 📖",
+  "17 Agustus 1945 — Hari bersejarah! 🎊",
+  "Kamu siap jadi pejuang muda? ⚔️",
+  "Bangsa yang besar menghargai sejarahnya! 🌟",
+];
+let bubbleIdx = 0;
+setInterval(() => {
+  bubbleIdx = (bubbleIdx + 1) % homeBubbles.length;
+  const el = document.getElementById('home-bubble');
+  if (el) {
+    el.style.opacity = '0';
+    setTimeout(() => {
+      el.innerHTML = homeBubbles[bubbleIdx].replace('\n','<br>');
+      el.style.opacity = '1';
+    }, 300);
+  }
+}, 3000);
+document.getElementById('home-bubble').style.transition = 'opacity 0.3s';
+</script>
+</body>
+</html>
